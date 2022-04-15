@@ -1,0 +1,66 @@
+---
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: PackageMetadata
+metadata:
+  name: test.hoegaarden.github.io
+spec:
+  displayName: "test package"
+  shortDescription: &desc "not sure yet, what that package is really going to do"
+  longDescription: *desc
+  providerName: "me"
+  maintainers:
+    - name: "me"
+  supportDescription: "no support, nothing"
+  categories:
+    - "test"
+---
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: test.hoegaarden.github.io.0.0.1
+spec:
+  refName: test.hoegaarden.github.io
+  version: 0.0.1
+  releasedAt: 2022-04-15T14:45:32Z
+  licenses:
+    - "none"
+  template:
+    spec:
+      fetch:
+      - git:
+          ref: main
+          url: https://github.com/hoegaarden/pkg
+          subPath: pkgs/test
+      template:
+      - ytt:
+          paths:
+          - config/
+      deploy:
+      - kapp: {}
+  # valuesSchema:
+  #   openAPIv3:
+  #     type: object
+  #     additionalProperties: false
+  #     properties:
+  #       excluded_packages:
+  #         type: array
+  #         default: []
+  #         items:
+  #           type: string
+  #         description:
+  #           "A list of package refs that should be excluded from app-toolkit"
+  #       contour:
+  #         type: object
+  #         default: {}
+  #         description: "contour values"
+  #       kpack:
+  #         type: object
+  #         default: {}
+  #         description: "kpack values"
+  #       knative_serving:
+  #         type: object
+  #         default: {}
+  #         description: "knative-serving values"
+  #       cert_manager:
+  #         type: object
+  #         default: {}

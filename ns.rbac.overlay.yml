@@ -1,0 +1,78 @@
+#! this is used by prep-ns.sh to prepare a packages
+#! namespace and RBAC foo
+
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+
+#@ def getDV(name):
+#@   return data.values[name] if hasattr(data.values, name) else data.values.instance
+#@ end
+
+#@ ns                 = data.values.ns
+#@ sa                 = getDV("sa")
+#@ role               = "pkg:" + getDV("role")
+#@ rolebinding        = "pkg:" + getDV("rolebinding")
+#@ clusterrole        = "pkg:" + getDV("clusterrole")
+#@ clusterrolebinding = "pkg:" + getDV("clusterrolebinding")
+
+#@overlay/match by=overlay.subset({"kind":"Namespace"})
+---
+metadata:
+  #@overlay/match missing_ok=True
+  name: #@ ns
+
+#@overlay/match by=overlay.subset({"kind":"ServiceAccount"})
+---
+metadata:
+  #@overlay/match missing_ok=True
+  name: #@ sa
+  #@overlay/match missing_ok=True
+  namespace: #@ ns
+
+#@overlay/match by=overlay.subset({"kind":"Role"}), expects="1+"
+---
+metadata:
+  #@overlay/match missing_ok=True
+  name: #@ role
+  #@overlay/match missing_ok=True
+  namespace: #@ ns
+
+#@overlay/match by=overlay.subset({"kind":"RoleBinding"}), expects="1+"
+---
+metadata:
+  #@overlay/match missing_ok=True
+  name: #@ rolebinding
+  #@overlay/match missing_ok=True
+  namespace: #@ ns
+roleRef:
+  #@overlay/match missing_ok=True
+  name: #@ role
+subjects:
+#@overlay/match by="kind"
+-
+  #@overlay/match missing_ok=True
+  name: #@ sa
+  kind: ServiceAccount
+
+#@overlay/match by=overlay.subset({"kind":"ClusterRole"}), expects="0+"
+---
+metadata:
+  #@overlay/match missing_ok=True
+  name: #@ clusterrole
+
+#@overlay/match by=overlay.subset({"kind":"ClusterRoleBinding"}), expects="0+"
+---
+metadata:
+  #@overlay/match missing_ok=True
+  name: #@ clusterrolebinding
+roleRef:
+  #@overlay/match missing_ok=True
+  name: #@ clusterrole
+subjects:
+#@overlay/match by="kind"
+-
+  #@overlay/match missing_ok=True
+  name: #@ sa
+  #@overlay/match missing_ok=True
+  namespace: #@ ns
+  kind: ServiceAccount

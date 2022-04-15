@@ -1,0 +1,10 @@
+apiVersion:  packaging.carvel.dev/v1alpha1
+kind: PackageRepository
+metadata:
+  name: repo.hoegaarden.github.io
+spec:
+  fetch:
+    git:
+      ref: main
+      subPath: repo
+      url: https://github.com/hoegaarden/pkg

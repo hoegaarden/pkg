@@ -1,6 +1,10 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: test
+  name: #@ data.values.name if hasattr(data.values, "name") else "test"
 data:
   some: data
+  foo: #@ yaml.encode(data.values)

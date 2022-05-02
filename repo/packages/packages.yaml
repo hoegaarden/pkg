@@ -37,30 +37,12 @@ spec:
           - ./
       deploy:
       - kapp: {}
-  # valuesSchema:
-  #   openAPIv3:
-  #     type: object
-  #     additionalProperties: false
-  #     properties:
-  #       excluded_packages:
-  #         type: array
-  #         default: []
-  #         items:
-  #           type: string
-  #         description:
-  #           "A list of package refs that should be excluded from app-toolkit"
-  #       contour:
-  #         type: object
-  #         default: {}
-  #         description: "contour values"
-  #       kpack:
-  #         type: object
-  #         default: {}
-  #         description: "kpack values"
-  #       knative_serving:
-  #         type: object
-  #         default: {}
-  #         description: "knative-serving values"
-  #       cert_manager:
-  #         type: object
-  #         default: {}
+  valuesSchema:
+    openAPIv3:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          default: "someName"
+          description: the name of the configmap

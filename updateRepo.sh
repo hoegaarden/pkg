@@ -8,6 +8,10 @@ readonly HERE="$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )"
 readonly PKG_DIR="${HERE}/pkgs"
 readonly REPO_DIR="${HERE}/repo"
 
+# if you want to clone the whole thing to a different repo:
+readonly REPO="${REPO:-https://github.com/hoegaarden/pkg}"
+readonly REPO_REF="${REPO_REF:-main}"
+
 handlePkg() {
     local pkgName="$1"
 
@@ -27,6 +31,8 @@ handlePkg() {
             --data-values-file "$meta" \
             -v version="${ver}" \
             -v repoPath="pkgs/${pkgName}/${ver}/src" \
+            -v repo="${REPO}" \
+            -v repoRef="${REPO_REF}" \
             --data-values-file <(
                 ytt -f "${pkgDir}/${ver}/src/values.yml" --data-values-schema-inspect -o openapi-v3
             ) \

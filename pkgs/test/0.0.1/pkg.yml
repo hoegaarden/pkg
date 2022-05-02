@@ -4,6 +4,8 @@
 #@ pkgName  = data.values.metadata.name
 #@ repoPath = data.values.repoPath
 #@ schema   = data.values.components.schemas.dataValues
+#@ repo     = data.values.repo
+#@ repoRef  = data.values.repoRef
 ---
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
@@ -19,8 +21,8 @@ spec:
     spec:
       fetch:
       - git:
-          ref: main
-          url: https://github.com/hoegaarden/pkg
+          ref: #@ repoRef
+          url: #@ repo
           subPath: #@ repoPath
       template:
       - ytt:

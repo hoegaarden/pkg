@@ -12,7 +12,7 @@ handlePkg() {
     local pkgName="$1"
 
     local pkgDir="${PKG_DIR}/${pkgName}"
-    local repoDir="${REPO_DIR}/${pkgName}"
+    local repoDir="${REPO_DIR}/packages/${pkgName}"
     local meta="${pkgDir}/meta.yml"
 
     mkdir -p "${repoDir}"

@@ -1,0 +1,23 @@
+kind: PackageInstall
+apiVersion: packaging.carvel.dev/v1alpha1
+metadata:
+  name: test-install-01
+  namespace: test
+spec:
+  serviceAccountName: test-install-01
+  packageRef:
+    refName: test.hoegaarden.github.io
+    versionSelection:
+      constraints: 0.0.1
+  values:
+  - secretRef:
+      name: test-install-01
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: test-install-01
+  namespace: test
+stringData:
+  values.yml: |
+    name: something

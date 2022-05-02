@@ -9,13 +9,14 @@ readonly OVERLAY="${DIR}/ns.rbac.overlay.yml"
 
 main() {
     local pkg="${1?must be the app/pkg we are preparing for, one of those in ${DIR}/pkgs}"
-    local name="${2?must be the app\'s/pkg\'s instance name}"
-    local ns="${3?must be the app\'s/pkg\'s namespace}"
+    local ver="${2?must be the app\'s/pkg\'s version}"
+    local name="${3?must be the app\'s/pkg\'s instance name}"
+    local ns="${4?must be the app\'s/pkg\'s namespace}"
 
-    local objFile="${DIR}/pkgs/${pkg}.ns.rbac.yml"
+    local objFile="${DIR}/pkgs/${pkg}/${ver}/ns.rbac.yml"
 
     [ -e "$objFile" ] || {
-        echo >&2 "no namespace/rbac config for package '$pkg' found, expected it in '$objFile'"
+        echo >&2 "no namespace/rbac config for package '$pkg/$ver' found, expected it in '$objFile'"
         return 1
     }
 

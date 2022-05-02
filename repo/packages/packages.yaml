@@ -34,7 +34,7 @@ spec:
       template:
       - ytt:
           paths:
-          - config/
+          - ./
       deploy:
       - kapp: {}
   # valuesSchema:

@@ -25,6 +25,7 @@ and package repo. Some important choices:
 │       ├── 0.0.1                     #   ... and a version 0.0.1
 │       │   ├── example-install.yml   # show your users how you might want to use the packages
 │       │   ├── ns.rbac.yml           # all objects, esp. RBAC stuff, this version of the packages needs up front
+│       │   ├── pkg_test.go           # the package's tests
 │       │   ├── pkg.yml               # the package, version specific
 │       │   └── src                   # the actual code of the package we will run through ytt
 │       │       ├── main.yml          #   ... all the file ...

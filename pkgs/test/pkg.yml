@@ -6,6 +6,7 @@
 #@ schema   = data.values.components.schemas.dataValues
 #@ repo     = data.values.repo
 #@ repoRef  = data.values.repoRef
+#@ date     = data.values.date
 ---
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
@@ -14,7 +15,7 @@ metadata:
 spec:
   refName: #@ pkgName
   version: #@ version
-  releasedAt: 2022-04-15T14:45:32Z
+  releasedAt: #@ date
   licenses:
     - "none"
   template:

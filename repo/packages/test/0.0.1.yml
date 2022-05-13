@@ -12,9 +12,9 @@ spec:
     spec:
       fetch:
       - git:
-          ref: main
+          ref: test@0.0.1
           url: https://github.com/hoegaarden/pkg
-          subPath: pkgs/test/0.0.1/src
+          subPath: pkgs/test/src
       template:
       - ytt:
           paths:

@@ -7,17 +7,16 @@ set -o pipefail
 readonly HERE="$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )"
 readonly PKG_DIR="pkgs"
 readonly REPO_DIR="repo"
+readonly TRUNK='main'
 
 # if you want to clone the whole thing to a different repo:
 readonly REPO="${REPO:-https://github.com/hoegaarden/pkg}"
 
-currentTip() {
-    git rev-parse --abbrev-ref HEAD
-}
-
 getPkgRevs() {
-    git tag -l "${1}@*"
-    git branch -l "${1}@*"
+    git for-each-ref --format='%(refname:short)' \
+        --sort='refname:short' \
+        "refs/heads/${1}@*" \
+        "refs/tags/${1}@*"
 }
 
 getVersionedFile() {
@@ -54,16 +53,14 @@ genPkgForVersion() {
 handlePkg() {
     local pkgName="$1"
 
-    local currentTip
-    currentTip="$( currentTip )"
     local pkgDir="${PKG_DIR}/${pkgName}"
     local repoDir="${REPO_DIR}/packages/${pkgName}"
     mkdir -p "${repoDir}"
 
-    # get the meta from the current tip
+    # get the meta from the trunk
     local meta="${pkgDir}/meta.yml"
-    echo "## ${pkgName}: writing package meta data"
-    getVersionedFile "$meta" "$currentTip" > "${repoDir}/meta.yml"
+    echo "## ${pkgName}: writing package meta data from ${TRUNK}"
+    getVersionedFile "$meta" "$TRUNK" > "${repoDir}/meta.yml"
 
     local rev ver
     while read -r rev
@@ -74,9 +71,10 @@ handlePkg() {
             > "${repoDir}/${ver}.yml"
     done < <(getPkgRevs "$pkgName")
 
-    # the current tip as additional "dev" version
-    echo "## ${pkgName}/${ver}: writing package from ${currentTip}"
-    genPkgForVersion "$pkgDir" "$currentTip" "0.0.0-dev" "$meta" \
+    # "release" the trunk as a floating dev release
+    ver="0.0.0-dev"
+    echo "## ${pkgName}/${ver}: writing package from ${TRUNK}"
+    genPkgForVersion "$pkgDir" "$TRUNK" "$ver" "$meta" \
         > "${repoDir}/next.yml"
 }
 

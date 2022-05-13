@@ -75,11 +75,9 @@ handlePkg() {
     done < <(getPkgRevs "$pkgName")
 
     # the current tip as additional "dev" version
-    local versionFile="${pkgDir}/next_version"
-    ver="$( getVersionedFile "$versionFile" "$currentTip" )"
-    echo "## ${pkgName}/${ver}: writing package from ${currentTip} (version from $versionFile)"
-    genPkgForVersion "$pkgDir" "$currentTip" "$ver" "$meta" \
-        > "${repoDir}/${ver}.yml"
+    echo "## ${pkgName}/${ver}: writing package from ${currentTip}"
+    genPkgForVersion "$pkgDir" "$currentTip" "0.0.0-dev" "$meta" \
+        > "${repoDir}/next.yml"
 }
 
 main() {

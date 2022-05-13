@@ -1,0 +1,32 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: test.hoegaarden.github.io.0.0.0-dev
+spec:
+  refName: test.hoegaarden.github.io
+  version: 0.0.0-dev
+  releasedAt: "2022-05-13T13:36:25+02:00"
+  licenses:
+  - none
+  template:
+    spec:
+      fetch:
+      - git:
+          ref: main
+          url: https://github.com/hoegaarden/pkg
+          subPath: pkgs/test/src
+      template:
+      - ytt:
+          paths:
+          - ./
+      deploy:
+      - kapp: {}
+  valuesSchema:
+    openAPIv3:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: Name of the configmap
+          default: something

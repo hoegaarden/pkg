@@ -1,18 +1,18 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: test.hoegaarden.github.io.0.0.2-dev.0
+  name: test.hoegaarden.github.io.0.0.2
 spec:
   refName: test.hoegaarden.github.io
-  version: 0.0.2-dev.0
-  releasedAt: "2022-05-13T12:08:43+02:00"
+  version: 0.0.2
+  releasedAt: "2022-05-13T13:36:25+02:00"
   licenses:
   - none
   template:
     spec:
       fetch:
       - git:
-          ref: main
+          ref: test@0.0.2
           url: https://github.com/hoegaarden/pkg
           subPath: pkgs/test/src
       template:

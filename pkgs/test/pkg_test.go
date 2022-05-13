@@ -9,14 +9,16 @@ import (
 func TestPackage(t *testing.T) {
 	commonTests := func(jq *JQer) {
 		jq.
-			IsNum("length", 1).
+			IsNum("length", 2).
 			IsTrue(`.[0] | (.kind == "ConfigMap" and .apiVersion == "v1" and .data.some == "data")`).
+			IsTrue(`.[1] | (.kind == "Secret" and .apiVersion == "v1" and (.data.some|@base64d) == "data" )`).
 			IsYamlString(".[0].data.foo")
 	}
 
 	jq := NewJQer(t, Ytt{})
 	jq.
 		IsString(".[0].metadata.name", "something").
+		IsString(".[1].metadata.name", "something").
 		IsString(".[0].data.foo", "name: something\n")
 	commonTests(jq)
 
@@ -32,6 +34,7 @@ func TestPackage(t *testing.T) {
 		jq := NewJQer(t, ytt)
 		jq.
 			IsString(".[0].metadata.name", "some-random-name").
+			IsString(".[1].metadata.name", "some-random-name").
 			IsString(".[0].data.foo", "name: some-random-name\n")
 		commonTests(jq)
 	})

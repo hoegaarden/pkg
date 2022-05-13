@@ -9,14 +9,27 @@ readonly OVERLAY='ns.rbac.overlay.yml'
 
 getFileFromVersion() {
     local repoPath="$1"
-    local ver="$2"
+    local rev="$2"
 
-    if [[ "$ver" == "-" ]] ; then
+    if [[ "$rev" == "-" ]] ; then
         cat "${repoPath}"
         return
     fi
 
-    git show "${ver}:${repoPath}"
+    git show "${rev}:${repoPath}"
+}
+
+getFromRev() {
+    local pkg="$1"
+    local ver="${2:-}"
+
+    local rbacFile="pkgs/${pkg}/ns.rbac.yml"
+    local rev="${ver}"
+    [[ "$ver" != '-' ]] && rev="${pkg}@${ver}"
+
+    getFileFromVersion "${rbacFile}" "${rev}"
+    echo '---'
+    getFileFromVersion "${OVERLAY}" "${rev}"
 }
 
 maybeApply() {
@@ -33,19 +46,14 @@ main() {
     local ns="${3?must be the app\'s/pkg\'s namespace}"
     local ver="${4?must be the app\'s/pkg\'s version, can be - for the currently checked out revision}"
 
-    local rbacFile="pkgs/${pkg}/ns.rbac.yml"
-
     cd "${DIR}"
 
-    {
-        getFileFromVersion "${rbacFile}" "${ver}"
-        echo '---'
-        getFileFromVersion "${OVERLAY}" "${ver}"
-    } | ytt -f - \
-        --data-values-env 'DV' \
-        --data-value "instance=${name}" \
-        --data-value "ns=${ns}" \
-      | maybeApply
+    getFromRev "$pkg" "$ver" \
+        | ytt -f - \
+            --data-values-env 'DV' \
+            --data-value "instance=${name}" \
+            --data-value "ns=${ns}" \
+        | maybeApply
 }
 
 main "$@"

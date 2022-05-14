@@ -1,4 +1,5 @@
 #@data/values-schema
 ---
 #@schema/desc "Name of the configmap"
-name: something
+secretName: sec
+configMapName: cm

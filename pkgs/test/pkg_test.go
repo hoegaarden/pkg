@@ -9,7 +9,7 @@ import (
 func TestPackage(t *testing.T) {
 	t.Parallel()
 
-	t.Run("with no data values, with defaults", func(t *testing.T) {
+	t.Run("without data values, with defaults", func(t *testing.T) {
 		NewJQer(t, Ytt{}).
 			IsTrue(`.[0] | (.kind == "ConfigMap" and .apiVersion == "v1" and .data.some == "data")`).
 			IsTrue(`.[1] | (.kind == "Secret" and .apiVersion == "v1" and (.data.some|@base64d) == "data" )`).
@@ -23,32 +23,31 @@ func TestPackage(t *testing.T) {
 		t.Parallel()
 
 		testCases := map[string]struct {
-			dvs  []DV
-			test func(*JQer)
+			test       func(*JQer)
+			dataValues []string
 		}{
 			"setting configMapName": {
-				dvs: []DV{PlainDV("configMapName", "some-cm")},
+				dataValues: []string{"configMapName=some-cm"},
 				test: func(jq *JQer) {
 					jq.IsString(".[0].metadata.name", "some-cm").
 						MatchesString(".[0].data.foo", "configMapName: some-cm")
 				},
 			},
 			"setting secretName": {
-				dvs: []DV{PlainDV("secretName", "some-secret")},
+				dataValues: []string{"secretName=some-secret"},
 				test: func(jq *JQer) {
 					jq.IsString(".[1].metadata.name", "some-secret").
 						MatchesString(".[0].data.foo", "secretName: some-secret")
 				},
 			},
 			"setting secretName and configMapName": {
-				dvs: []DV{FileDV(
-					"#@data/values",
-					"---",
-					"configMapName: some-cm",
-					"secretName: some-secret",
-				)},
+				dataValues: []string{
+					"configMapName=some-cm",
+					"secretName=some-secret",
+				},
 				test: func(jq *JQer) {
-					jq.IsString(".[1].metadata.name", "some-secret").
+					jq.IsString(".[0].metadata.name", "some-cm").
+						IsString(".[1].metadata.name", "some-secret").
 						MatchesString(".[0].data.foo", "secretName: some-secret").
 						MatchesString(".[0].data.foo", "configMapName: some-cm")
 				},
@@ -60,7 +59,7 @@ func TestPackage(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				jq := NewJQer(t, Ytt{DVs: tc.dvs})
+				jq := NewJQer(t, Ytt{DataValues: tc.dataValues})
 				tc.test(jq)
 			})
 		}

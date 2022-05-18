@@ -36,6 +36,7 @@ func (jq *JQer) getInput() {
 			break
 		} else if err != nil {
 			jq.T.Fatal(err)
+			return
 		}
 		data = append(data, r)
 	}
@@ -43,7 +44,7 @@ func (jq *JQer) getInput() {
 	jq.data = data
 }
 
-func (jq *JQer) GetRaw(q string) interface{} {
+func (jq *JQer) GetRaw(q string) any {
 	jq.T.Helper()
 
 	jq.once.Do(jq.getInput)

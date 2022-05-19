@@ -24,6 +24,15 @@ type JQer struct {
 	once sync.Once
 }
 
+func (jq *JQer) WithT(t *testing.T) *JQer {
+	return &JQer{
+		T:        t,
+		Provider: jq.Provider,
+		data:     jq.data,
+		once:     jq.once,
+	}
+}
+
 func (jq *JQer) getInput() {
 	input := jq.Provider.Provide(jq.T)
 

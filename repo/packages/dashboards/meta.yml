@@ -1,0 +1,19 @@
+---
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: PackageMetadata
+metadata:
+  name: dasbhoards.hoegaarden.github.io
+spec:
+  displayName: "dashboards"
+  shortDescription: &desc "some useful k8s/tkg dashboards"
+  longDescription: *desc
+  providerName: "me"
+  maintainers:
+    - name: "me"
+    - name: "andreacasini"
+  supportDescription: "no support, nothing"
+  categories:
+    - "dashboard"
+    - "grafana"
+    - "tanzu"
+    - "tkg"

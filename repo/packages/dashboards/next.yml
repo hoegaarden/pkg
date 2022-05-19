@@ -1,0 +1,27 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: dasbhoards.hoegaarden.github.io.0.0.0-dev
+spec:
+  refName: dasbhoards.hoegaarden.github.io
+  version: 0.0.0-dev
+  releasedAt: "2022-05-19T15:28:17+02:00"
+  licenses:
+  - none
+  template:
+    spec:
+      fetch:
+      - git:
+          ref: main
+          url: https://github.com/hoegaarden/pkg
+          subPath: pkgs/dashboards/src
+      template:
+      - ytt:
+          paths:
+          - ./
+      deploy:
+      - kapp: {}
+  valuesSchema:
+    openAPIv3:
+      nullable: true
+      default: null

@@ -1,0 +1,14 @@
+kind: PackageInstall
+apiVersion: packaging.carvel.dev/v1alpha1
+metadata:
+  name: dashboards-install-01
+  namespace: test-install-01
+spec:
+  serviceAccountName: dashboards-install-01
+  packageRef:
+    refName: test.hoegaarden.github.io
+    versionSelection:
+      constraints: 0.0.0-dev
+  values:
+  - secretRef:
+      name: dashboards-install

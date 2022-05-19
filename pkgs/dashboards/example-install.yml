@@ -1,13 +1,25 @@
 kind: PackageInstall
 apiVersion: packaging.carvel.dev/v1alpha1
 metadata:
-  name: dashboards-install-01
-  namespace: test-install-01
+  name: custom-dashboards
+  # The namespace where we install(ed) the grafana package, e.g.
+  # ```
+  # tanzu package install grafana \
+  #   --package-name grafana.community.tanzu.vmware.com \
+  #   --version 7.5.11 \
+  #   --create-namespace --namespace grafana \
+  #   -f /tmp/values.yml
+  # ```
+  namespace: grafana
 spec:
-  serviceAccountName: dashboards-install-01
+  # The service account that was created by
+  # ```
+  # ./prep-ns.sh dashboards dashboards grafana -
+  # ```
+  serviceAccountName: dashboards
   packageRef:
     refName: dashboards.hoegaarden.github.io
     versionSelection:
-      constraints: 0.0.0-dev
-      prereleases:
-        identifiers: ["dev"]
+      constraints: 0.0.1
+      # prereleases:
+      #   identifiers: ["dev"]

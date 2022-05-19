@@ -1,11 +1,11 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: dasbhoards.hoegaarden.github.io.0.0.0-dev
+  name: dashboards.hoegaarden.github.io.0.0.0-dev
 spec:
-  refName: dasbhoards.hoegaarden.github.io
+  refName: dashboards.hoegaarden.github.io
   version: 0.0.0-dev
-  releasedAt: "2022-05-19T15:28:17+02:00"
+  releasedAt: "2022-05-19T16:07:00+02:00"
   licenses:
   - none
   template:

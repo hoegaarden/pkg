@@ -1,15 +1,14 @@
----
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: PackageMetadata
 metadata:
   name: test.hoegaarden.github.io
 spec:
-  displayName: "test package"
-  shortDescription: &desc "not sure yet, what that package is really going to do"
-  longDescription: *desc
-  providerName: "me"
+  displayName: test
+  shortDescription: not sure yet, what that package is really going to do
+  longDescription: not sure yet, what that package is really going to do
+  providerName: me
   maintainers:
-    - name: "me"
-  supportDescription: "no support, nothing"
+  - name: me
+  supportDescription: no support, nothing
   categories:
-    - "test"
+  - test

@@ -5,7 +5,7 @@ metadata:
 spec:
   refName: test.hoegaarden.github.io
   version: 0.0.0-dev
-  releasedAt: "2022-05-14T16:41:50+02:00"
+  releasedAt: "2022-05-19T16:07:00+02:00"
   licenses:
   - none
   template:

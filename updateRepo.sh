@@ -37,6 +37,13 @@ genPkgForVersion() {
     local ver="$3"
     local meta="$4"
 
+    local date
+    if [[ "$gitRev" == "$TRUNK" ]] ; then
+        date="$( date -d '@0' --iso-8601=s )"
+    else
+        date="$( getCommitDate "$gitRev" )"
+    fi
+
     getVersionedFile "${pkgDir}/pkg.yml" "$gitRev" \
         | ytt \
             --data-values-file "$meta" \
@@ -44,9 +51,10 @@ genPkgForVersion() {
             -v repoPath="${pkgDir}/src" \
             -v repo="${REPO}" \
             -v repoRef="${gitRev}" \
-            -v date="$( getCommitDate "$gitRev" )" \
+            -v date="${date}" \
             --data-values-file <(
-                getVersionedFile "${pkgDir}/src/values.yml" "$gitRev" | ytt -f - --data-values-schema-inspect -o openapi-v3
+                getVersionedFile "${pkgDir}/src/values.yml" "$gitRev" \
+                    | ytt -f - --data-values-schema-inspect -o openapi-v3
             ) \
             -f -
 }
@@ -82,6 +90,17 @@ handlePkg() {
         > "${repoDir}/next.yml"
 }
 
+commitRepo() {
+    git add "$1"
+
+    if git diff --cached --quiet ; then
+        echo "## no change in ${1}, nothing to commit"
+    else
+        echo "## committing updated packages in ${1}"
+        git commit -m '[repo] Update repo for all packages'
+    fi
+}
+
 main() {
     cd "$HERE"
 
@@ -91,6 +110,8 @@ main() {
     do
         handlePkg "$pkgName"
     done < <(find "$PKG_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%P\0')
+
+    commitRepo "$REPO_DIR"
 }
 
 main "$@"

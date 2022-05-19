@@ -6,9 +6,8 @@ metadata:
 spec:
   serviceAccountName: dashboards-install-01
   packageRef:
-    refName: test.hoegaarden.github.io
+    refName: dashboards.hoegaarden.github.io
     versionSelection:
       constraints: 0.0.0-dev
-  values:
-  - secretRef:
-      name: dashboards-install
+      prereleases:
+        identifiers: ["dev"]

@@ -11,6 +11,7 @@ readonly TRUNK='main'
 
 # if you want to clone the whole thing to a different repo:
 readonly REPO="${REPO:-https://github.com/hoegaarden/pkg}"
+readonly PKG_NS="${PKG_NS:-hoegaarden.github.io}"
 
 getPkgRevs() {
     git for-each-ref --format='%(refname:short)' \
@@ -58,23 +59,26 @@ handlePkg() {
     mkdir -p "${repoDir}"
 
     # get the meta from the trunk
-    local meta="${pkgDir}/meta.yml"
+    local metaSrc="${pkgDir}/meta.yml"
+    local metaDest="${repoDir}/meta.yml"
     echo "## ${pkgName}: writing package meta data from ${TRUNK}"
-    getVersionedFile "$meta" "$TRUNK" > "${repoDir}/meta.yml"
+    getVersionedFile "$metaSrc" "$TRUNK" \
+        | ytt -v pkgName="$pkgName" -v pkgNS="$PKG_NS" -f - \
+        > "${metaDest}"
 
     local rev ver
     while read -r rev
     do
         ver="${rev#*@}"
         echo "## ${pkgName}/${ver}: writing package from ${rev} (verison from git revision)"
-        genPkgForVersion "$pkgDir" "$rev" "$ver" "$meta" \
+        genPkgForVersion "$pkgDir" "$rev" "$ver" "$metaDest" \
             > "${repoDir}/${ver}.yml"
     done < <(getPkgRevs "$pkgName")
 
     # "release" the trunk as a floating dev release
     ver="0.0.0-dev"
     echo "## ${pkgName}/${ver}: writing package from ${TRUNK}"
-    genPkgForVersion "$pkgDir" "$TRUNK" "$ver" "$meta" \
+    genPkgForVersion "$pkgDir" "$TRUNK" "$ver" "$metaDest" \
         > "${repoDir}/next.yml"
 }
 

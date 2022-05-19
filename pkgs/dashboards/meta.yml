@@ -1,10 +1,15 @@
+#@ load("@ytt:data", "data")
+
+#@ pkgName = data.values.pkgName
+#@ pkgNS   = data.values.pkgNS
+
 ---
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: PackageMetadata
 metadata:
-  name: dasbhoards.hoegaarden.github.io
+  name: #@ "{}.{}".format(pkgName, pkgNS)
 spec:
-  displayName: "dashboards"
+  displayName: #@ pkgName
   shortDescription: &desc "some useful k8s/tkg dashboards"
   longDescription: *desc
   providerName: "me"

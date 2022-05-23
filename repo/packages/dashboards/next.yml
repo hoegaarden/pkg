@@ -21,7 +21,3 @@ spec:
           - ./
       deploy:
       - kapp: {}
-  valuesSchema:
-    openAPIv3:
-      nullable: true
-      default: null

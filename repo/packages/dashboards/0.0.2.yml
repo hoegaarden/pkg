@@ -1,0 +1,23 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: dashboards.hoegaarden.github.io.0.0.2
+spec:
+  refName: dashboards.hoegaarden.github.io
+  version: 0.0.2
+  releasedAt: "2022-05-23T13:28:32+02:00"
+  licenses:
+  - none
+  template:
+    spec:
+      fetch:
+      - git:
+          ref: dashboards@0.0.2
+          url: https://github.com/hoegaarden/pkg
+          subPath: pkgs/dashboards/src
+      template:
+      - ytt:
+          paths:
+          - ./
+      deploy:
+      - kapp: {}

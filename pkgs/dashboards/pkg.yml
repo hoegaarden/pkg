@@ -3,7 +3,6 @@
 #@ version  = data.values.version
 #@ pkgName  = data.values.metadata.name
 #@ repoPath = data.values.repoPath
-#@ schema   = data.values.components.schemas.dataValues
 #@ repo     = data.values.repo
 #@ repoRef  = data.values.repoRef
 #@ date     = data.values.date
@@ -31,5 +30,3 @@ spec:
           - ./
       deploy:
       - kapp: {}
-  valuesSchema:
-    openAPIv3: #@ schema

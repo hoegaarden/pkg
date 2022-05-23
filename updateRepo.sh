@@ -31,6 +31,17 @@ getCommitDate() {
     git show -s --format=%cI "${1}"
 }
 
+getVersionedValueSchema() {
+    local file="$1"
+    local rev="$2"
+
+    ytt -f - --data-values-schema-inspect -o openapi-v3 < <(
+        getVersionedFile "${file}" "${rev}" 2>/dev/null || {
+            echo >&2 "## values file '${file}' @ ${rev} not existant, skipping values schema generation"
+        }
+    )
+}
+
 genPkgForVersion() {
     local pkgDir="$1"
     local gitRev="$2"
@@ -53,8 +64,7 @@ genPkgForVersion() {
             -v repoRef="${gitRev}" \
             -v date="${date}" \
             --data-values-file <(
-                getVersionedFile "${pkgDir}/src/values.yml" "$gitRev" \
-                    | ytt -f - --data-values-schema-inspect -o openapi-v3
+                getVersionedValueSchema "${pkgDir}/src/values.yml" "$gitRev"
             ) \
             -f -
 }
@@ -69,7 +79,7 @@ handlePkg() {
     # get the meta from the trunk
     local metaSrc="${pkgDir}/meta.yml"
     local metaDest="${repoDir}/meta.yml"
-    echo "## ${pkgName}: writing package meta data from ${TRUNK}"
+    echo >&2 "## ${pkgName}: writing package meta data from ${TRUNK}"
     getVersionedFile "$metaSrc" "$TRUNK" \
         | ytt -v pkgName="$pkgName" -v pkgNS="$PKG_NS" -f - \
         > "${metaDest}"
@@ -78,14 +88,14 @@ handlePkg() {
     while read -r rev
     do
         ver="${rev#*@}"
-        echo "## ${pkgName}/${ver}: writing package from ${rev} (verison from git revision)"
+        echo >&2 "## ${pkgName}/${ver}: writing package from ${rev} (verison from git revision)"
         genPkgForVersion "$pkgDir" "$rev" "$ver" "$metaDest" \
             > "${repoDir}/${ver}.yml"
     done < <(getPkgRevs "$pkgName")
 
     # "release" the trunk as a floating dev release
     ver="0.0.0-dev"
-    echo "## ${pkgName}/${ver}: writing package from ${TRUNK}"
+    echo >&2 "## ${pkgName}/${ver}: writing package from ${TRUNK}"
     genPkgForVersion "$pkgDir" "$TRUNK" "$ver" "$metaDest" \
         > "${repoDir}/next.yml"
 }
@@ -94,9 +104,9 @@ commitRepo() {
     git add "$1"
 
     if git diff --cached --quiet ; then
-        echo "## no change in ${1}, nothing to commit"
+        echo >&2 "## no change in ${1}, nothing to commit"
     else
-        echo "## committing updated packages in ${1}"
+        echo >&2 "## committing updated packages in ${1}"
         git commit -m '[repo] Update repo for all packages'
     fi
 }

@@ -53,7 +53,7 @@ func (jq *JQer) getInput() {
 	jq.data = data
 }
 
-func (jq *JQer) GetRaw(q string) any {
+func (jq *JQer) getRaw(q string) []any {
 	jq.T.Helper()
 
 	jq.once.Do(jq.getInput)
@@ -75,6 +75,12 @@ func (jq *JQer) GetRaw(q string) any {
 		}
 		res = append(res, v)
 	}
+
+	return res
+}
+
+func (jq *JQer) GetRaw(q string) any {
+	res := jq.getRaw(q)
 
 	if l := len(res); l != 1 {
 		jq.T.Fatalf("expected query '%s' to return exactly one result, got: %d", q, l)
@@ -123,6 +129,16 @@ func (jq *JQer) GetBool(q string) bool {
 		return false
 	}
 	return o
+}
+
+func (jq *JQer) IsEmpty(q string) *JQer {
+	jq.T.Helper()
+
+	if res := jq.getRaw(q); len(res) != 0 {
+		jq.T.Errorf("expected query '%s' not to return any result, got: %v", q, res)
+	}
+
+	return jq
 }
 
 func (jq *JQer) IsString(q, e string) *JQer {

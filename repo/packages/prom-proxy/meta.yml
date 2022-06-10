@@ -1,0 +1,18 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: PackageMetadata
+metadata:
+  name: prom-proxy.hoegaarden.github.io
+spec:
+  displayName: prom-proxy
+  shortDescription: Reverse proxy in front of prometheus for auth
+  longDescription: |
+    You can use this simple reverse proxy, if the prometheus installation iside
+    your clusters runs withour protection, but you want to expose it externally
+    in, at least a bit, safer way.
+  providerName: '@hoegaarden'
+  maintainers:
+  - name: '@hoegaarden'
+  supportDescription: no support, nothing
+  categories:
+  - prometheus
+  - observability

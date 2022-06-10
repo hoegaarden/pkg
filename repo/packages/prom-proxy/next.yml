@@ -1,0 +1,72 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: prom-proxy.hoegaarden.github.io.0.0.0-dev
+spec:
+  refName: prom-proxy.hoegaarden.github.io
+  version: 0.0.0-dev
+  releasedAt: "1970-01-01T01:00:00+01:00"
+  licenses:
+  - none
+  template:
+    spec:
+      fetch:
+      - git:
+          ref: main
+          url: https://github.com/hoegaarden/pkg
+          subPath: pkgs/prom-proxy/src
+      template:
+      - ytt:
+          paths:
+          - ./
+      deploy:
+      - kapp: {}
+  valuesSchema:
+    openAPIv3:
+      type: object
+      additionalProperties: false
+      properties:
+        replicas:
+          type: integer
+          default: 1
+        upstream:
+          type: string
+          default: http://prometheus-server:80/
+        ingress:
+          type: object
+          additionalProperties: false
+          nullable: true
+          properties:
+            type:
+              type: string
+              default: ingress
+        tls:
+          type: object
+          additionalProperties: false
+          properties:
+            secretName:
+              type: string
+              default: prom-proxy-tls
+            inline:
+              type: object
+              additionalProperties: false
+              nullable: true
+              properties:
+                cert:
+                  type: string
+                  default: ""
+                key:
+                  type: string
+                  default: ""
+                ca:
+                  type: string
+                  default: ""
+        image:
+          type: string
+          default: nginxinc/nginx-unprivileged
+        fqdn:
+          type: string
+          default: ""
+        htpasswd:
+          type: string
+          default: ""

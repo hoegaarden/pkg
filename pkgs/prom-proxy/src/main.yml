@@ -1,0 +1,159 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
+#@ load("@ytt:assert", "assert")
+
+#@ if data.values.fqdn == "":
+#@   assert.fail('fqdn can not be empty')
+#@ end
+
+#@ if data.values.htpasswd == "":
+#@   assert.fail('httpasswd should not be empty, but at least hold one user/password pair')
+#@ end
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prom-proxy-htpasswd
+  labels:
+    app: prom-proxy
+data:
+  htpasswd: #@ base64.encode(data.values.htpasswd)
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prom-proxy
+  labels:
+    app: prom-proxy
+spec:
+  replicas: #@ data.values.replicas
+  selector:
+    matchLabels:
+      app: prom-proxy
+  template:
+    metadata:
+      labels:
+        app: prom-proxy
+    spec:
+      containers:
+      - image: #@ data.values.image
+        name: prom-proxy
+        volumeMounts:
+        - name: conf-d
+          mountPath: /etc/nginx/conf.d/
+        - name: htpasswd
+          mountPath: /etc/nginx/.htpasswd
+          subPath: htpasswd
+      volumes:
+      - name: htpasswd
+        secret:
+          secretName: prom-proxy-htpasswd
+      - name: conf-d
+        configMap:
+          name: prom-proxy-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prom-proxy-config
+  labels:
+    app: prom-proxy
+data:
+  #@yaml/text-templated-strings
+  server.conf: |
+    server {
+      listen       8080;
+      server_name  _;
+
+      location / {
+        proxy_pass (@= data.values.upstream @);
+        auth_basic "Login";
+        auth_basic_user_file ".htpasswd";
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prom-proxy
+  labels:
+    app: prom-proxy
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: prom-proxy
+  type: ClusterIP
+
+#@ certSecName = data.values.tls.secretName
+#@ certData = data.values.tls.inline
+#@ if certData != None and certData.cert != '' and certData.key != '':
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: #@ certSecName
+type: kubernetes.io/tls
+data:
+  tls.crt: #@ base64.encode(certData.cert)
+  tls.key: #@ base64.encode(certData.key)
+  tls.ca:  #@ base64.encode(certData.ca)
+#@ end
+
+#@ if data.values.ingress:
+
+#@ supportedIngresses = ["contour", "ingress"]
+#@ if data.values.ingress.type not in supportedIngresses:
+#@   assert.fail("only {} are supported as ingresses".format(supportedIngresses))
+#@ end
+
+#@ if data.values.ingress.type == "contour":
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: prom-proxy
+  labels:
+    app: prom-proxy
+spec:
+  virtualhost:
+    fqdn: #@ data.values.fqdn
+    tls:
+      secretName: #@ certSecName
+  routes:
+  - conditions:
+    - prefix: /
+    services:
+    - name: prom-proxy
+      port: 8080
+#@ end
+
+#@ if data.values.ingress.type == "ingress":
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prom-proxy
+  labels:
+    app: prom-proxy
+spec:
+  tls:
+  - hosts:
+    - #@ data.values.fqdn
+    secretName: #@ certSecName
+  rules:
+  - host: #@ data.values.fqdn
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prom-proxy
+            port:
+              number: 8080
+#@ end
+#@ end

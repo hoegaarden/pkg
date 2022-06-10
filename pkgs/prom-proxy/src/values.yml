@@ -1,0 +1,19 @@
+#@data/values-schema
+---
+replicas: 1
+upstream: http://prometheus-server:80/
+#@schema/nullable
+ingress:
+  type: ingress #! or contour
+tls:
+  secretName: prom-proxy-tls
+  #@schema/nullable
+  inline:
+    cert: ''
+    key: ''
+    ca: ''
+image: nginxinc/nginx-unprivileged
+#! some.fqdn.tld
+fqdn: ''
+#! admin:$apr1$bOFkAjU6$5m43/cKYD3oETdXxh3BIA1
+htpasswd: ''

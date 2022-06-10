@@ -1,0 +1,39 @@
+kind: PackageInstall
+apiVersion: packaging.carvel.dev/v1alpha1
+metadata:
+  name: prom-proxy
+  namespace: test
+spec:
+  serviceAccountName: prom-proxy
+  packageRef:
+    refName: prom-proxy.hoegaarden.github.io
+    versionSelection:
+      constraints: 0.0.0-dev
+  values:
+  - secretRef:
+      name: prom-proxy-data-values
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: prom-proxy-data-values
+  namespace: test
+stringData:
+  values.yml: |
+    fqdn: some.fqdn.tld
+    htpasswd: 'admin:$apr1$bOFkAjU6$5m43/cKYD3oETdXxh3BIA1'
+    tls:
+      inline:
+        cert: |
+          -----BEGIN CERTIFICATE-----
+            ... leaf cert ...
+          -----END CERTIFICATE-----
+        ca: |
+          -----BEGIN CERTIFICATE-----
+            ... ca cert ...
+          -----END CERTIFICATE-----
+        key: |
+          -----BEGIN RSA PRIVATE KEY-----
+            ... private key ...
+          -----END RSA PRIVATE KEY-----
+    replicas: 3

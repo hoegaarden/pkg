@@ -1,0 +1,35 @@
+#@ load("@ytt:data", "data")
+
+#@ version  = data.values.version
+#@ pkgName  = data.values.metadata.name
+#@ repoPath = data.values.repoPath
+#@ schema   = data.values.valuesSchema
+#@ repo     = data.values.repo
+#@ repoRef  = data.values.repoRef
+#@ date     = data.values.date
+---
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: #@ pkgName + "." + version
+spec:
+  refName: #@ pkgName
+  version: #@ version
+  releasedAt: #@ date
+  licenses:
+    - "none"
+  template:
+    spec:
+      fetch:
+      - git:
+          ref: #@ repoRef
+          url: #@ repo
+          subPath: #@ repoPath
+      template:
+      - ytt:
+          paths:
+          - ./
+      deploy:
+      - kapp: {}
+  #@ if/end schema:
+  valuesSchema: #@ schema

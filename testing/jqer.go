@@ -20,21 +20,27 @@ type JQer struct {
 	T        *testing.T
 	Provider JsonProvider
 
-	data []interface{}
-	once sync.Once
+	data        []interface{}
+	dataLoadErr error
+	once        sync.Once
 }
 
 func (jq *JQer) WithT(t *testing.T) *JQer {
 	return &JQer{
-		T:        t,
-		Provider: jq.Provider,
-		data:     jq.data,
-		once:     jq.once,
+		T:           t,
+		Provider:    jq.Provider,
+		data:        jq.data,
+		dataLoadErr: jq.dataLoadErr,
+		once:        jq.once,
 	}
 }
 
-func (jq *JQer) getInput() {
-	input := jq.Provider.Provide(jq.T)
+func getInput(provider JsonProvider) ([]any, error) {
+	input, err := provider.Provide()
+
+	if err != nil {
+		return nil, err
+	}
 
 	var data []interface{}
 
@@ -44,19 +50,24 @@ func (jq *JQer) getInput() {
 		if err := dec.Decode(&r); err == io.EOF {
 			break
 		} else if err != nil {
-			jq.T.Fatal(err)
-			return
+			return nil, err
 		}
 		data = append(data, r)
 	}
 
-	jq.data = data
+	return data, nil
 }
 
 func (jq *JQer) getRaw(q string) []any {
 	jq.T.Helper()
 
-	jq.once.Do(jq.getInput)
+	jq.once.Do(func() {
+		jq.data, jq.dataLoadErr = getInput(jq.Provider)
+	})
+
+	if err := jq.dataLoadErr; err != nil {
+		jq.T.Fatal(err)
+	}
 
 	query, err := gojq.Parse(q)
 	if err != nil {
@@ -77,6 +88,14 @@ func (jq *JQer) getRaw(q string) []any {
 	}
 
 	return res
+}
+
+func (jq *JQer) HasLoadError() *JQer {
+	if _, err := getInput(jq.Provider); err == nil {
+		jq.T.Errorf("expected load error to have occured, but didn't")
+	}
+
+	return jq
 }
 
 func (jq *JQer) GetRaw(q string) any {

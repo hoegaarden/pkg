@@ -3,7 +3,6 @@ package testing
 import (
 	"io"
 	"io/ioutil"
-	"testing"
 
 	"github.com/vmware-tanzu/carvel-ytt/pkg/cmd/template"
 	"github.com/vmware-tanzu/carvel-ytt/pkg/cmd/ui"
@@ -12,7 +11,7 @@ import (
 )
 
 type JsonProvider interface {
-	Provide(*testing.T) []byte
+	Provide() ([]byte, error)
 }
 
 type Ytt struct {
@@ -22,7 +21,7 @@ type Ytt struct {
 
 var _ JsonProvider = Ytt{}
 
-func (y Ytt) Provide(t *testing.T) []byte {
+func (y Ytt) Provide() ([]byte, error) {
 	stdout := ioutil.Discard
 	stderr := ioutil.Discard
 	debug := false
@@ -35,24 +34,21 @@ func (y Ytt) Provide(t *testing.T) []byte {
 	pkgPath := or(y.SrcDir, "src")
 	filesToProcess, err := files.NewSortedFilesFromPaths([]string{pkgPath}, files.SymlinkAllowOpts{})
 	if err != nil {
-		t.Fatal(err)
-		return []byte{}
+		return []byte{}, err
 	}
 
 	out := opts.RunWithFiles(template.Input{Files: filesToProcess}, ui)
 	if out.Err != nil {
-		t.Fatal(out.Err)
-		return []byte{}
+		return []byte{}, out.Err
 	}
 
 	jsonPrinter := func(w io.Writer) yamlmeta.DocumentPrinter { return yamlmeta.NewJSONPrinter(w) }
 	bytes, err := out.DocSet.AsBytesWithPrinter(jsonPrinter)
 	if err != nil {
-		t.Fatal(err)
-		return []byte{}
+		return []byte{}, err
 	}
 
-	return bytes
+	return bytes, nil
 }
 
 func or(options ...string) string {

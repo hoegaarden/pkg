@@ -20,20 +20,19 @@ metadata:
   namespace: test
 stringData:
   values.yml: |
-    fqdn: some.fqdn.tld
-    htpasswd: 'admin:$apr1$bOFkAjU6$5m43/cKYD3oETdXxh3BIA1'
-    tls:
-      inline:
-        cert: |
-          -----BEGIN CERTIFICATE-----
-            ... leaf cert ...
-          -----END CERTIFICATE-----
-        ca: |
-          -----BEGIN CERTIFICATE-----
-            ... ca cert ...
-          -----END CERTIFICATE-----
-        key: |
-          -----BEGIN RSA PRIVATE KEY-----
-            ... private key ...
-          -----END RSA PRIVATE KEY-----
+    htpasswd: "admin:$apr1$bOFkAjU6$5m43/cKYD3oETdXxh3BIA1"
+    upstream: http://prom.monitoring.svc.cluster.local:80/
+    ingress:
+      type: contour
+      fqdn: some.fqdn.tld
+      tls:
+        inline:
+          cert: |
+            -----BEGIN CERTIFICATE-----
+              ... leaf cert ...
+            -----END CERTIFICATE-----
+          key: |
+            -----BEGIN RSA PRIVATE KEY-----
+              ... private key ...
+            -----END RSA PRIVATE KEY-----
     replicas: 3

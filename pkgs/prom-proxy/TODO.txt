@@ -1,0 +1,4 @@
+- Make this a regular basic auth proxy, there is no reason why it should only
+  be used for fronting prom.
+- Support cert-manager
+- Do we need a reloader, that reacts on cert changes, if the cert is managed out-of-band?

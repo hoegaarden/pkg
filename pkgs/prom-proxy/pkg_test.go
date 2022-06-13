@@ -13,9 +13,13 @@ func TestPromProxy(t *testing.T) {
 		test       func(*JQer)
 		dataValues []string
 	}{
+		"fails without htpasswd": {
+			test: func(jq *JQer) {
+				jq.HasLoadError()
+			},
+		},
 		"defaults": {
 			dataValues: []string{
-				"fqdn=some.fqdn.tld",
 				"htpasswd=something",
 			},
 			test: func(jq *JQer) {
@@ -31,34 +35,44 @@ func TestPromProxy(t *testing.T) {
 					// has no ingress or that like
 					IsEmpty(`.[] | select(.kind == "Ingress" or .kind == "HTTPProxy")`).
 					// has not TLS secret
-					IsEmpty(`.[] | select(.kind == "Secret" and .metadata.name == "prom-proxy-tls")`)
+					IsEmpty(`.[] | select(.kind == "Secret" and .metadata.name == "prom-proxy-tls")`).
+					// has limits and resources set
+					IsTrue(`
+						.[] | select(.kind == "Deployment")
+							| .spec.template.spec.containers[].resources
+							| (
+								(.limits | type == "object")
+									and
+								(.requests | type == "object")
+							)
+					`)
 			},
 		},
 		"provide TLS cert stuff inline": {
 			dataValues: []string{
-				"fqdn=ignore",
 				"htpasswd=ignore",
-				"tls.inline.cert=someCert",
-				"tls.inline.key=someKey",
-				"tls.inline.ca=someCA",
+				"ingress.type=contour",
+				"ingress.fqdn=someFQDN",
+				"ingress.tls.inline.cert=someCert",
+				"ingress.tls.inline.key=someKey",
 			},
 			test: func(jq *JQer) {
 				// a secret with the TLS data is created
 				jq.IsString(`
 					.[] | select(.kind == "Secret" and .metadata.name == "prom-proxy-tls")
 						| .data | map_values(@base64d)
-						| [ .["tls.crt"] , .["tls.key"] , .["tls.ca"] ]
+						| [ .["tls.crt"] , .["tls.key"] ]
 						| join("|")
 					`,
-					"someCert|someKey|someCA",
+					"someCert|someKey",
 				)
 			},
 		},
 		"with ingress": {
 			dataValues: []string{
-				"fqdn=someFQDN",
 				"htpasswd=ignore",
 				"ingress.type=ingress",
+				"ingress.fqdn=someFQDN",
 			},
 			test: func(jq *JQer) {
 				jq.
@@ -70,9 +84,9 @@ func TestPromProxy(t *testing.T) {
 		},
 		"with httpproxy": {
 			dataValues: []string{
-				"fqdn=someFQDN",
 				"htpasswd=ignore",
 				"ingress.type=contour",
+				"ingress.fqdn=someFQDN",
 			},
 			test: func(jq *JQer) {
 				jq.

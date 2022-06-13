@@ -1,0 +1,91 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
+#@ load("@ytt:assert", "assert")
+
+#@ ingress = data.values.ingress
+
+#@ if ingress:
+
+#@ if ingress.fqdn == "":
+#@   assert.fail('fqdn can not be empty')
+#@ end
+
+#@ def makeHTTPProxy():
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: prom-proxy
+  labels:
+    app: prom-proxy
+spec:
+  virtualhost:
+    fqdn: #@ ingress.fqdn
+    tls:
+      secretName: #@ ingress.tls.secretName
+  routes:
+  - conditions:
+    - prefix: /
+    services:
+    - name: prom-proxy
+      port: 8080
+#@ end
+
+#@ def makeIngress():
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prom-proxy
+  labels:
+    app: prom-proxy
+spec:
+  tls:
+  - hosts:
+    - #@ ingress.fqdn
+    secretName: #@ ingress.tls.secretName
+  rules:
+  - host: #@ ingress.fqdn
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prom-proxy
+            port:
+              number: 8080
+#@ end
+
+#@ options = {
+#@   'contour': makeHTTPProxy,
+#@   'ingress': makeIngress,
+#@ }
+
+#@ if ingress.type not in options:
+#@   assert.fail(
+#@     "only {} are supported as ingresses".format(options.keys())
+#@   )
+#@ end
+
+--- #@ options[ingress.type]()
+
+#@ inlineCert = ingress.tls.inline
+
+#@ if inlineCert:
+
+#@ if inlineCert.cert == '' or inlineCert.key == '':
+#@   assert.fail("both the cert and the key need to be provided")
+#@ end
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: #@ ingress.tls.secretName
+type: kubernetes.io/tls
+data:
+  tls.crt: #@ base64.encode(inlineCert.cert)
+  tls.key: #@ base64.encode(inlineCert.key)
+
+#@ end  #! if inlineCert
+
+#@ end  #! if ingress
